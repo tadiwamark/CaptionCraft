@@ -24,7 +24,7 @@ url = 'https://github.com/tadiwamark/CaptionCraft/releases/download/v2.0/image_c
 filename = url.split('/')[-1]
 
 urllib.request.urlretrieve(url, filename)
-# Load your trained model
+# Load trained model
 model = tf.keras.models.load_model(filename)  
 
 # Load Tokenizer
