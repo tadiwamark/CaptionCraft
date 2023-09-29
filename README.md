@@ -9,7 +9,6 @@ This repository contains a sophisticated Image Captioning Model developed in Pyt
 - [Usage](#usage)
 - [Model Architecture](#model-architecture)
 - [Project Structure](#project-structure)
-- [License](#license)
 
 ## Introduction
 
@@ -51,6 +50,4 @@ The project involves several key steps:
 6. **Model Training**: Employing a generator for batch training and utilizing early stopping during the training of the model.
 7. **Caption Generation**: Creating descriptive captions for new images post-training.
 
-## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
