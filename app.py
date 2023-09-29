@@ -10,10 +10,14 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, MobileN
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Model
 import urllib.request
-import gensim.summarization
 from collections import Counter
 import nltk
-nltk.download('averaged_perceptron_tagger')
+import heapq
+import re
+from nltk.corpus import stopwords
+
+nltk.download('punkt')
+nltk.download('stopwords')
 
 url = 'https://github.com/tadiwamark/CaptionCraft/releases/download/v2.0/image_captioning_model.h5'
 filename = url.split('/')[-1]
@@ -35,11 +39,33 @@ def load_mobilenet_model():
     x = Dense(4096, activation='relu')(x)
     return Model(inputs=base_model.input, outputs=x)
 
-def extract_key_themes(text, num_keywords=5):
-    words = nltk.word_tokenize(text)
-    nouns = [word for word, pos in nltk.pos_tag(words) if pos.startswith('NN')]
-    freq_nouns = Counter(nouns)
-    return [item[0] for item in freq_nouns.most_common(num_keywords)]
+# Function to perform summarization
+def summarize(text, num_of_sentences=5):
+    sentence_list = nltk.sent_tokenize(text)
+    stopWords = set(stopwords.words("english"))
+    word_frequencies = {}
+    for word in nltk.word_tokenize(text):
+        if word.lower() not in stopWords:
+            if word in word_frequencies.keys():
+                word_frequencies[word] += 1
+            else:
+                word_frequencies[word] = 1
+    
+    maximum_frequncy = max(word_frequencies.values())
+    for word in word_frequencies.keys():
+        word_frequencies[word] = (word_frequencies[word]/maximum_frequncy)
+    
+    sentence_scores = {}
+    for sent in sentence_list:
+        for word, freq in word_frequencies.items():
+            if word in sent.lower():
+                if sent in sentence_scores.keys():
+                    sentence_scores[sent] += freq
+                else:
+                    sentence_scores[sent] = freq
+    
+    summary_sentences = heapq.nlargest(num_of_sentences, sentence_scores, key=sentence_scores.get)
+    return ' '.join(summary_sentences)
 
 
 def int_to_word(integer, tokenizer):
@@ -70,6 +96,7 @@ def app():
     
     if uploaded_file is not None:
         st.write("File uploaded successfully!")
+        descriptions = []  # List to hold the descriptions of each frame
         try:
             tfile = tempfile.NamedTemporaryFile(delete=False) 
             tfile.write(uploaded_file.read())
@@ -83,6 +110,9 @@ def app():
             while cap.isOpened():
                 frameId = cap.get(1)
                 ret, frame = cap.read()
+                description = generate_description(model, tokenizer, feature)
+                descriptions.append(description)  # Append the description to the list
+            
                 if not ret:
                     break
                 if frameId % ((int(frameRate) + 1) * 1) == 0:
@@ -98,18 +128,10 @@ def app():
                     st.image(frame, caption='Processed Frame', use_column_width=True)
                     st.write(description)
                     
-            # Forming the entire video description
-            full_description = ' '.join(frame_descriptions)
-            
-            # Summarize
-            summary = gensim.summarization.summarize(full_description, ratio=0.3)  # Adjust ratio as per need
-            
-            # Extract key themes
-            themes = extract_key_themes(full_description)
-            themes_text = ', '.join(themes)
-            
-            st.write("Final Video Summary:", summary)
-            st.write("Key Themes from Video:", themes_text)
+            final_text = ' '.join(descriptions)  # Join all the descriptions into a single string
+            final_summary = summarize(final_text)  # Summarize the final text
+            st.subheader('Final Video Summary')
+            st.write(final_summary)
             
         except Exception as e:
             st.write(f"An error occurred: {str(e)}")
