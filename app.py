@@ -96,6 +96,9 @@ def app():
     
     if uploaded_file is not None:
         st.write("File uploaded successfully!")
+        for _ in range(1):
+            st.markdown("<span style='color:blue'>We are now going to generate a frame by frame description then give a final description at the end.</span>", unsafe_allow_html=True)
+            time.sleep(0.5)
         descriptions = []  # List to hold the descriptions of each frame
         try:
             tfile = tempfile.NamedTemporaryFile(delete=False) 
