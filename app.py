@@ -10,6 +10,10 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, MobileN
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Model
 import urllib.request
+from gensim.summarization import summarize
+from collections import Counter
+import nltk
+nltk.download('averaged_perceptron_tagger')
 
 url = 'https://github.com/tadiwamark/CaptionCraft/releases/download/v2.0/image_captioning_model.h5'
 filename = url.split('/')[-1]
@@ -30,6 +34,13 @@ def load_mobilenet_model():
     x = base_model.output
     x = Dense(4096, activation='relu')(x)
     return Model(inputs=base_model.input, outputs=x)
+
+def extract_key_themes(text, num_keywords=5):
+    words = nltk.word_tokenize(text)
+    nouns = [word for word, pos in nltk.pos_tag(words) if pos.startswith('NN')]
+    freq_nouns = Counter(nouns)
+    return [item[0] for item in freq_nouns.most_common(num_keywords)]
+
 
 def int_to_word(integer, tokenizer):
     for word, index in tokenizer.word_index.items():
@@ -58,16 +69,19 @@ def app():
     uploaded_file = st.file_uploader("Upload a video (max 2MB)", type=['mp4', 'avi', 'mov'])
     
     if uploaded_file is not None:
-        st.write("File uploaded successfully!")  # Log a message on successful upload
+        st.write("File uploaded successfully!")
         try:
-            tfile = tempfile.NamedTemporaryFile(delete=False)
+            tfile = tempfile.NamedTemporaryFile(delete=False) 
             tfile.write(uploaded_file.read())
+            
             mobilenet_model = load_mobilenet_model()
-    
             cap = cv2.VideoCapture(tfile.name)
-            frameRate = cap.get(5)  # frame rate
+            frameRate = cap.get(5)
+            
+            frame_descriptions = []
+            
             while cap.isOpened():
-                frameId = cap.get(1)  # current frame number
+                frameId = cap.get(1)
                 ret, frame = cap.read()
                 if not ret:
                     break
@@ -78,12 +92,28 @@ def app():
                     st.write("Feature extracted using MobileNet model")
                     description = generate_description(model, tokenizer, feature)
                     
+                    frame_descriptions.append(description)
+                    
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     st.image(frame, caption='Processed Frame', use_column_width=True)
                     st.write(description)
+                    
+            # Forming the entire video description
+            full_description = ' '.join(frame_descriptions)
+            
+            # Summarize
+            summary = summarize(full_description, ratio=0.3)  # Adjust ratio as per need
+            
+            # Extract key themes
+            themes = extract_key_themes(full_description)
+            themes_text = ', '.join(themes)
+            
+            st.write("Final Video Summary:", summary)
+            st.write("Key Themes from Video:", themes_text)
+            
         except Exception as e:
-            st.write(f"An error occurred: {str(e)}")  # Print the error message to Streamlit
-
+            st.write(f"An error occurred: {str(e)}")
+            
         st.write("Video processing completed")
         cap.release()
 
