@@ -22,7 +22,7 @@ model = tf.keras.models.load_model(filename)
 with open('tokenizer.pickle', 'rb') as handle:  # Update with actual path if needed
     tokenizer = pickle.load(handle)
 
-max_length = 41
+max_length = 49
 
 # Load MobileNetV2 Model for feature extraction
 def load_mobilenet_model():
