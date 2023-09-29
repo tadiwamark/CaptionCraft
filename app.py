@@ -110,8 +110,6 @@ def app():
             while cap.isOpened():
                 frameId = cap.get(1)
                 ret, frame = cap.read()
-                description = generate_description(model, tokenizer, feature)
-                descriptions.append(description)  # Append the description to the list
             
                 if not ret:
                     break
@@ -121,8 +119,8 @@ def app():
                     feature = mobilenet_model.predict(img)
                     st.write("Feature extracted using MobileNet model")
                     description = generate_description(model, tokenizer, feature)
+                    descriptions.append(description)  # Append the description to the list
                     
-                    frame_descriptions.append(description)
                     
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     st.image(frame, caption='Processed Frame', use_column_width=True)
