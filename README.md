@@ -1,6 +1,6 @@
 # Caption Craft
 
-This repository contains a sophisticated Image Captioning Model developed in Python using TensorFlow. It generates descriptive captions for images by leveraging a dataset of image-caption pairs and training a deep learning model on it.
+This repository contains a sophisticated Image Captioning Model developed in Python using TensorFlow. It generates descriptive captions for videos by leveraging a dataset of image-caption pairs and training a deep learning model on it.
 
 ## Table of Contents
 
