@@ -10,7 +10,7 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, MobileN
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Model
 import urllib.request
-from gensim.summarization import summarize
+import gensim.summarization
 from collections import Counter
 import nltk
 nltk.download('averaged_perceptron_tagger')
@@ -102,7 +102,7 @@ def app():
             full_description = ' '.join(frame_descriptions)
             
             # Summarize
-            summary = summarize(full_description, ratio=0.3)  # Adjust ratio as per need
+            summary = gensim.summarization.summarize(full_description, ratio=0.3)  # Adjust ratio as per need
             
             # Extract key themes
             themes = extract_key_themes(full_description)
