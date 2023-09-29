@@ -15,6 +15,7 @@ import nltk
 import heapq
 import re
 from nltk.corpus import stopwords
+import time
 
 nltk.download('punkt')
 nltk.download('stopwords')
