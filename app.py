@@ -9,11 +9,14 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, MobileNetV2
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Model
+import urllib.request
 
+url = 'https://github.com/tadiwamark/CaptionCraft/releases/download/v2.0/image_captioning_model.h5'
+filename = url.split('/')[-1]
 
-
+urllib.request.urlretrieve(url, filename)
 # Load your trained model
-model = tf.keras.models.load_model('image_captioning_model.h5')  
+model = tf.keras.models.load_model(filename)  
 
 # Load Tokenizer
 with open('tokenizer.pickle', 'rb') as handle:  # Update with actual path if needed
